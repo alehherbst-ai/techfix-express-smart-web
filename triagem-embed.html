@@ -1,0 +1,176 @@
+<!-- TechFix Express - Triagem Inteligente
+     Cole este bloco inteiro num elemento Embed (HTML embed) do Webflow,
+     dentro do div #triagem-embed. Tudo usa o prefixo tfx- para não conflitar com o site. -->
+
+<style>
+  .tfx { --tfx-primary:#2563EB; --tfx-accent:#14B8A6; --tfx-text:#0F172A; --tfx-muted:#475569;
+         --tfx-bg:#FFFFFF; --tfx-line:#CBD5E1; --tfx-danger:#B91C1C;
+         max-width:720px; margin:0 auto; padding:clamp(16px,4vw,32px); box-sizing:border-box;
+         background:var(--tfx-bg); color:var(--tfx-text); border:1px solid var(--tfx-line);
+         border-radius:16px; box-shadow:0 8px 24px rgba(15,23,42,.08); font-family:inherit; }
+  .tfx *, .tfx *::before, .tfx *::after { box-sizing:border-box; }
+  .tfx-grid { display:grid; gap:16px; grid-template-columns:1fr 1fr; }
+  .tfx-field { display:flex; flex-direction:column; gap:6px; }
+  .tfx-field.full { grid-column:1 / -1; }
+  .tfx label { font-weight:600; font-size:.95rem; }
+  .tfx input, .tfx select, .tfx textarea { font:inherit; color:var(--tfx-text); padding:12px 14px;
+         border:1.5px solid var(--tfx-line); border-radius:10px; background:#fff; width:100%; }
+  .tfx textarea { min-height:120px; resize:vertical; }
+  .tfx input:focus-visible, .tfx select:focus-visible, .tfx textarea:focus-visible,
+  .tfx button:focus-visible { outline:3px solid var(--tfx-accent); outline-offset:2px; }
+  .tfx [aria-invalid="true"] { border-color:var(--tfx-danger); }
+  .tfx-error { color:var(--tfx-danger); font-size:.85rem; min-height:1.1em; }
+  .tfx-hint { color:var(--tfx-muted); font-size:.85rem; }
+  .tfx-btn { margin-top:8px; width:100%; padding:14px 20px; border:0; border-radius:12px; cursor:pointer;
+         background:var(--tfx-primary); color:#fff; font:inherit; font-weight:700; font-size:1.05rem;
+         transition:transform .15s ease, background .15s ease; }
+  .tfx-btn:hover { background:#1D4ED8; transform:translateY(-1px); }
+  .tfx-btn[disabled] { opacity:.7; cursor:wait; transform:none; }
+  .tfx-result { margin-top:24px; padding:20px; border-radius:14px; background:#F1F5F9;
+         border-left:6px solid var(--tfx-primary); animation:tfx-in .35s ease; }
+  .tfx-result[hidden] { display:none; }
+  .tfx-result.alta { border-left-color:#DC2626; } .tfx-result.media { border-left-color:#F59E0B; }
+  .tfx-result.baixa { border-left-color:var(--tfx-accent); }
+  .tfx-badges { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+  .tfx-badge { padding:4px 12px; border-radius:999px; font-size:.85rem; font-weight:700; background:#DBEAFE; color:#1E3A8A; }
+  .tfx-price { font-size:1.4rem; font-weight:800; margin:8px 0; }
+  .tfx-result ul { margin:8px 0 0; padding-left:20px; }
+  .tfx-wa { display:inline-block; margin-top:16px; padding:12px 18px; border-radius:10px; background:#16A34A;
+         color:#fff; font-weight:700; text-decoration:none; }
+  .tfx-note { margin-top:12px; font-size:.8rem; color:var(--tfx-muted); }
+  @keyframes tfx-in { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+  @media (max-width:600px) { .tfx-grid { grid-template-columns:1fr; } }
+  @media (prefers-reduced-motion:reduce) { .tfx-result { animation:none; } .tfx-btn { transition:none; } }
+</style>
+
+<section class="tfx" aria-labelledby="tfx-title">
+  <h3 id="tfx-title" style="margin:0 0 4px;">Triagem inteligente</h3>
+  <p class="tfx-hint" style="margin:0 0 20px;">Conte o que está acontecendo. Em segundos você recebe o tipo de problema, a urgência e uma estimativa.</p>
+
+  <form id="tfx-form" novalidate>
+    <div class="tfx-grid">
+      <div class="tfx-field">
+        <label for="tfx-nome">Seu nome</label>
+        <input id="tfx-nome" name="nome" type="text" autocomplete="name" required aria-describedby="tfx-nome-err">
+        <span class="tfx-error" id="tfx-nome-err"></span>
+      </div>
+      <div class="tfx-field">
+        <label for="tfx-tipo">Tipo de aparelho</label>
+        <select id="tfx-tipo" name="aparelho" required aria-describedby="tfx-tipo-err">
+          <option value="">Selecione</option>
+          <option>Celular</option><option>Notebook</option><option>Computador de mesa</option><option>Tablet</option>
+        </select>
+        <span class="tfx-error" id="tfx-tipo-err"></span>
+      </div>
+      <div class="tfx-field full">
+        <label for="tfx-modelo">Marca e modelo <span class="tfx-hint">(opcional)</span></label>
+        <input id="tfx-modelo" name="modelo" type="text" placeholder="Ex.: iPhone 12, Dell Inspiron 15">
+      </div>
+      <div class="tfx-field full">
+        <label for="tfx-desc">O que está acontecendo?</label>
+        <textarea id="tfx-desc" name="descricao" required minlength="10" maxlength="600"
+          placeholder="Ex.: caiu no chão, a tela trincou e o toque não responde na parte de baixo." aria-describedby="tfx-desc-err tfx-count"></textarea>
+        <span class="tfx-hint" id="tfx-count">0 / 600</span>
+        <span class="tfx-error" id="tfx-desc-err"></span>
+      </div>
+    </div>
+    <button class="tfx-btn" type="submit" id="tfx-submit">Analisar meu problema</button>
+  </form>
+
+  <div class="tfx-result" id="tfx-result" hidden tabindex="-1" role="status" aria-live="polite"></div>
+</section>
+
+<script>
+(function () {
+  // Cole aqui a URL do webhook do Make. Se ficar vazio, usa a classificação simulada (modo demonstração).
+  var WEBHOOK_URL = ""; // cole aqui a URL do seu webhook do Make; vazio = modo demonstração
+  var WHATSAPP = "5548996430355"; // troque pelo número da loja, com DDI e DDD
+
+  var form = document.getElementById("tfx-form");
+  var out = document.getElementById("tfx-result");
+  var btn = document.getElementById("tfx-submit");
+  var desc = document.getElementById("tfx-desc");
+  var count = document.getElementById("tfx-count");
+
+  desc.addEventListener("input", function () { count.textContent = desc.value.length + " / 600"; });
+
+  function setError(id, msg, field) {
+    document.getElementById(id).textContent = msg || "";
+    if (msg) field.setAttribute("aria-invalid", "true"); else field.removeAttribute("aria-invalid");
+  }
+
+  function validate() {
+    var nome = form.nome, tipo = form.aparelho, d = form.descricao, ok = true, first = null;
+    setError("tfx-nome-err", nome.value.trim().length < 2 ? "Informe seu nome." : "", nome);
+    setError("tfx-tipo-err", !tipo.value ? "Escolha o tipo de aparelho." : "", tipo);
+    setError("tfx-desc-err", d.value.trim().length < 10 ? "Descreva o problema com pelo menos 10 caracteres." : "", d);
+    [nome, tipo, d].forEach(function (f) { if (f.getAttribute("aria-invalid") === "true") { ok = false; first = first || f; } });
+    if (first) first.focus();
+    return ok;
+  }
+
+  // Classificação simulada, usada no modo demonstração e se o webhook falhar.
+  function fallback(data) {
+    var t = (data.descricao + " " + data.modelo).toLowerCase();
+    var regras = [
+      { re: /tela|trinc|quebr|touch|toque|display/, cat: "Troca de tela", urg: "media", min: 250, max: 900, dias: "1 a 2 dias" },
+      { re: /bateria|carrega|descarrega|inch|esquenta|desliga sozinho/, cat: "Troca de bateria", urg: "baixa", min: 120, max: 350, dias: "mesmo dia" },
+      { re: /molh|água|agua|liquido|líquido|curto|não liga|nao liga|placa/, cat: "Reparo de placa", urg: "alta", min: 200, max: 700, dias: "3 a 5 dias" },
+      { re: /v[ií]rus|lent|travando|propaganda|malware|formata|backup/, cat: "Formatação e remoção de vírus", urg: "baixa", min: 80, max: 180, dias: "1 dia" },
+      { re: /ssd|mem[oó]ria|upgrade|hd|ram/, cat: "Upgrade de notebook (SSD e memória)", urg: "baixa", min: 150, max: 600, dias: "mesmo dia" }
+    ];
+    var r = regras.filter(function (x) { return x.re.test(t); })[0] ||
+      { cat: "Diagnóstico geral", urg: "media", min: 60, max: 200, dias: "1 dia" };
+    return {
+      categoria: r.cat, urgencia: r.urg, estimativa_min: r.min, estimativa_max: r.max, prazo: r.dias,
+      resumo: "Pelo que você descreveu, o caso parece se encaixar em: " + r.cat + ". Um técnico confirma na bancada, sem compromisso.",
+      proximos_passos: ["Desligue o aparelho se houver risco de piora", "Faça backup se ainda for possível", "Traga o aparelho ou agende a retirada"],
+      simulado: true
+    };
+  }
+
+  function esc(s) { var d = document.createElement("div"); d.textContent = String(s == null ? "" : s); return d.innerHTML; }
+  var URG = { alta: "Urgência alta", media: "Urgência média", baixa: "Urgência baixa" };
+
+  function render(r, data) {
+    var urg = ["alta", "media", "baixa"].indexOf(r.urgencia) > -1 ? r.urgencia : "media";
+    var passos = (r.proximos_passos || []).map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("");
+    var msg = encodeURIComponent("Olá! Fiz a triagem no site. Aparelho: " + data.aparelho + " " + data.modelo +
+      ". Problema: " + data.descricao + ". Classificação: " + r.categoria + ".");
+    out.className = "tfx-result " + urg;
+    out.innerHTML =
+      '<div class="tfx-badges"><span class="tfx-badge">' + esc(r.categoria) + '</span><span class="tfx-badge">' + URG[urg] + '</span>' +
+      (r.prazo ? '<span class="tfx-badge">Prazo: ' + esc(r.prazo) + '</span>' : "") + "</div>" +
+      '<div class="tfx-price">Estimativa: R$ ' + esc(r.estimativa_min) + " a R$ " + esc(r.estimativa_max) + "</div>" +
+      "<p>" + esc(r.resumo) + "</p>" + (passos ? "<strong>Próximos passos</strong><ul>" + passos + "</ul>" : "") +
+      '<a class="tfx-wa" href="https://wa.me/' + WHATSAPP + "?text=" + msg + '" target="_blank" rel="noopener">Continuar no WhatsApp</a>' +
+      '<p class="tfx-note">' + (r.simulado ? "Resultado de demonstração. " : "Análise gerada por IA. ") +
+      "A estimativa é aproximada e depende da avaliação técnica.</p>";
+    out.hidden = false;
+    out.focus();
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!validate()) return;
+    var data = { nome: form.nome.value.trim(), aparelho: form.aparelho.value,
+                 modelo: form.modelo.value.trim(), descricao: form.descricao.value.trim() };
+    btn.disabled = true; btn.textContent = "Analisando...";
+
+    var pedido;
+    if (!WEBHOOK_URL) {
+      pedido = new Promise(function (ok) { setTimeout(function () { ok(fallback(data)); }, 900); });
+    } else {
+      var ctrl = new AbortController();
+      var timer = setTimeout(function () { ctrl.abort(); }, 20000);
+      // Formulário codificado como "requisição simples": evita o preflight de CORS no webhook do Make.
+      pedido = fetch(WEBHOOK_URL, { method: "POST", body: new URLSearchParams(data), signal: ctrl.signal })
+        .then(function (res) { if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); })
+        .catch(function () { return fallback(data); })
+        .then(function (r) { clearTimeout(timer); return r; });
+    }
+    pedido.then(function (r) { render(r, data); })
+          .then(function () { btn.disabled = false; btn.textContent = "Analisar meu problema"; });
+  });
+})();
+</script>
