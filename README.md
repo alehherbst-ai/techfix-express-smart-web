@@ -6,6 +6,8 @@ Site de uma assistência técnica de celulares e informática (cliente **fictíc
 
 **Documento teórico:** [docs/Documento-Teorico-TechFix-Express.pdf](docs/Documento-Teorico-TechFix-Express.pdf)
 
+**Vídeo pitch:** https://drive.google.com/file/d/1IsOAXKbevd2zK4azqLZz5yuMuh-uNbyV/view?usp=sharing
+
 > Trabalho da disciplina "Padrões Web para No Code e Low Code".
 
 ## O problema
